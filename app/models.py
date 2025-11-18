@@ -9,6 +9,13 @@ class JobStatus(str, Enum):
     SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"
 
+class WorkflowStatus(Enum):
+    '''Enumeration of all possible states for a workflow.'''
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+
 class Job(BaseModel):
     """Represents a single unit of work belonging to a workflow.
 
@@ -38,3 +45,5 @@ class Workflow(BaseModel):
     workflow_id: str
     user_id: str
     jobs: List[Job]
+    status: WorkflowStatus = WorkflowStatus.PENDING 
+

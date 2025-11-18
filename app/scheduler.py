@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from collections import defaultdict
-from .models import JobStatus
+from .models import JobStatus, WorkflowStatus
 
 
 MAX_WORKERS = 2            # Maximum number of jobs that can run in parallel
@@ -23,6 +23,7 @@ class Scheduler:
         self.active_users = set()
         self.user_queue = []
         self.branch_queues = defaultdict(list) # (user_id, branch) → FIFO list of jobs: [job1, job2, ...]
+        self.workflow_index = {}
 
     def submit_workflow(self, workflow):
         """Submit a new workflow for execution.
@@ -40,6 +41,7 @@ class Scheduler:
                 return "QUEUED"
 
         self.user_workflows[user].append(workflow)
+        self.workflow_index[workflow.workflow_id] = workflow
         for job in workflow.jobs:
             self.branch_queues[(user, job.branch)].append(job)
 
@@ -77,11 +79,26 @@ class Scheduler:
         - When all jobs of a user complete, releases user slot and activates the next queued user.
         """
         from .workers import run_tiled_job
+        workflow = None
+        for wf in self.user_workflows[user]:
+            if job in wf.jobs:
+                workflow = wf
+                break
+
         try:
             run_tiled_job(job)
             job.status = JobStatus.SUCCEEDED
         except:
             job.status = JobStatus.FAILED
+
+        all_jobs = self.get_all_jobs(user)
+        if any(j.status == JobStatus.FAILED for j in all_jobs):
+            workflow.status = WorkflowStatus.FAILED
+        elif all(j.status == JobStatus.SUCCEEDED for j in all_jobs):
+            workflow.status = WorkflowStatus.SUCCEEDED
+        else:
+            workflow.status = WorkflowStatus.RUNNING
+
         self.branch_queues[(user, branch)].pop(0)
         self.schedule()
 
