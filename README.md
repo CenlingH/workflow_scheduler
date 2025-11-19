@@ -181,9 +181,9 @@ uvicorn app.main:app --reload --port 8000
 http://127.0.0.1:8000/ui
 ```
 
-------
+#### Demo Screenshot:
 
-## 📘 Using Swagger API
+## ![demo](demo.png)📘 Using Swagger API
 
 FastAPI automatically provides an interactive API documentation page powered by **Swagger UI**.
 
@@ -358,11 +358,21 @@ results/<job_id>/results.json
 
 The file contains **synthetic polygons**, like:
 
-```
+```json
 [
   { "id": 1, "polygon": [[1,1],[2,1],[2,2],[1,2]], "type": "cell" },
   { "id": 2, "polygon": [[3,3],[4,3],[4,4],[3,4]], "type": "cell" }
 ]
+```
+
+The output folder structure is:
+
+```json
+results/
+  ├── user1/
+  │     └── results.json
+  ├── user3/
+        └── results.json
 ```
 
 This output is **not produced by a real segmentation model**. It is lightweight and deterministic, purely to **simulate an export pipeline** and demonstrate:
