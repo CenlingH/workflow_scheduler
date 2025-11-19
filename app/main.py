@@ -12,7 +12,8 @@ def create_workflow(data: dict, x_user_id: str = Header(...)):
     jobs = [
         Job(
             job_id=item["job_id"],
-            branch=item["branch"]
+            branch=item["branch"],
+            job_type=item.get("job_type", "SEGMENT_CELLS") 
         )
         for item in data["jobs"]
     ]
