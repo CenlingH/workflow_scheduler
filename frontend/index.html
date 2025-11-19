@@ -312,16 +312,43 @@ async function createWorkflow() {
   pollTimer = setInterval(fetchWorkflowStatus, 1000);
 }
 
-/* Fetch Status */
+/* Fetch Status with 404 handling */
 async function fetchWorkflowStatus() {
   const userId = document.getElementById("userId").value.trim();
   if (!currentWorkflowId) return;
 
-  const res = await fetch(`/workflow/${currentWorkflowId}`, {
-    headers: { "X-User-ID": userId }
-  });
+  let res;
+  try {
+    res = await fetch(`/workflow/${currentWorkflowId}`, {
+      headers: { "X-User-ID": userId }
+    });
+  } catch (err) {
+    console.error("Network error:", err);
+    return;
+  }
+
+  // --- Handle 404 (workflow deleted or expired) ---
+  if (res.status === 404) {
+    console.warn("Workflow not found. Stopping polling.");
+    clearInterval(pollTimer);
+    pollTimer = null;
+
+    document.getElementById("wfStatusSection").style.display = "none";
+    document.getElementById("wfPlaceholder").style.display = "block";
+    document.getElementById("wfPlaceholder").innerText =
+      "Workflow not found or finished. Create a new one.";
+
+    return;
+  }
+
+  // Other errors
+  if (!res.ok) {
+    console.error("Server error:", res.status);
+    return;
+  }
 
   const data = await res.json();
+
 
   /* Status Pill */
   const status = data.status;

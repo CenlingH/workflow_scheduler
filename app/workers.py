@@ -1,4 +1,5 @@
 import time
+import random
 # These job types need to be further adjusted based on real image processing algorithms. Below are just mock implementations.
 
 def run_segment_cells_job(job): 
@@ -50,6 +51,10 @@ def run_instanseg_job(job):
 
 def run_tiled_job(job):
     '''Choose the correct image processing job types.'''
+    # Simulate random failure for demonstration
+    if job.job_type == "INSTANSEG_WSI" and random.random() < 0.05:
+        raise RuntimeError(f"Job {job.job_id} failed due to simulated model error.")
+
     if job.job_type == "TISSUE_MASK":
         return run_tissue_mask_job(job)
     elif job.job_type == "INSTANSEG_WSI":

@@ -346,6 +346,32 @@ In Swagger:
 
 Wait **1 second per new token**, then you can continue.
 
+## **💬 Exported Per-Cell Segmentation Results (Mock Output)**
+
+This project includes a **mock implementation** of the “per-cell segmentation results” export feature required by the challenge. Since no real WSI model inference is performed, the system generates **simulated polygon annotations** when an `INSTANSEG_WSI` job completes.
+
+When such a job finishes successfully, the scheduler writes a file to:
+
+```
+results/<job_id>/results.json
+```
+
+The file contains **synthetic polygons**, like:
+
+```
+[
+  { "id": 1, "polygon": [[1,1],[2,1],[2,2],[1,2]], "type": "cell" },
+  { "id": 2, "polygon": [[3,3],[4,3],[4,4],[3,4]], "type": "cell" }
+]
+```
+
+This output is **not produced by a real segmentation model**. It is lightweight and deterministic, purely to **simulate an export pipeline** and demonstrate:
+
+- workflow → job → worker → export end-to-end flow
+- directory creation (`results/<job_id>/`)
+- JSON file writing
+- worker/scheduler integration
+
 ## 🧠 Design Highlights
 
 - Scheduler uses a `ThreadPoolExecutor`
@@ -355,6 +381,23 @@ Wait **1 second per new token**, then you can continue.
 - Frontend polls server in real time for progress updates
 
 ------
+
+## 🚀 Scaling the System (Handling 10× More Users & Workloads)
+
+To scale this system to support **10× more users and workflows**, several improvements can be applied:
+
+- **Horizontal Scaling of Workers**
+   Add more worker processes or deploy workers across multiple machines/containers. Since workers are stateless, they can scale almost linearly.
+- **Shared State Storage**
+   Move workflow/job status from in-memory Python structures to a shared database (Redis, PostgreSQL, or DynamoDB), allowing multiple API servers and workers to access consistent state.
+- **API Server Load Balancing**
+   Run multiple FastAPI instances behind a load balancer (NGINX / AWS ALB), enabling higher request throughput without blocking.
+- **Redis Scaling**
+   Upgrade Redis to a **clustered** or **replicated** setup to handle higher token-bucket traffic and workflow queries.
+- **Queue-Based Scheduling**
+   Replace in-process scheduler with a distributed message queue (Celery, Redis Queue, Kafka) to support high-throughput job dispatching.
+
+With these changes, the system can reliably process large numbers of workflows concurrently while keeping scheduling fairness and job execution responsiveness.
 
 ## 📌 Future Improvements
 

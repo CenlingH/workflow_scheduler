@@ -37,3 +37,13 @@ def create_workflow(data: dict, x_user_id: str = Header(...)):
         "workflow_id": wf.workflow_id,
         "status": status
     }
+
+@app.get("/workflow/{workflow_id}")
+def get_workflow_status(workflow_id: str, x_user_id: str = Header(...)):
+    """Get full workflow status by workflow_id."""    
+    wf = scheduler.workflow_index.get(workflow_id)
+    if not wf:
+        return {"error": "workflow not found"}
+    if wf.user_id != x_user_id:
+        return {"error": "permission denied"}
+    return wf
