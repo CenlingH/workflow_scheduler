@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Workflow Scheduler Dashboard</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-elevated: #161b22;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --accent: #2f81f7;
+      --accent-soft: rgba(56, 139, 253, 0.15);
+      --danger: #f85149;
+      --success: #3fb950;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    h1 { margin: 0 0 20px 0; font-size: 26px; font-weight: 600; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1.4fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 8px 24px rgba(1,4,9,0.8);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+
+    input, select {
+      width: 100%;
+      background: #010409;
+      color: var(--text);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s ease-in-out;
+    }
+
+    button:hover:not(:disabled) {
+      background: #1f6feb;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .add-job-btn {
+      width: 100%;
+      margin-top: 10px;
+      background: var(--accent);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #21262d;
+    }
+
+    th {
+      background: #0b0f16;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .remove-btn {
+      background: var(--danger);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .remove-btn:hover { background: #c93c38; }
+
+    /* status pill */
+    .status-pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid transparent;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .status-PENDING { background: #161b22; border-color: var(--border); color: var(--text-muted); }
+    .status-RUNNING { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+    .status-SUCCEEDED { background: rgba(63,185,80,0.18); border-color: var(--success); color: var(--success); }
+    .status-FAILED { background: rgba(248,81,73,0.18); border-color: var(--danger); color: var(--danger); }
+
+    /* progress bar */
+    .progress-shell {
+      height: 10px;
+      width: 100%;
+      background: #0b0f16;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid #21262d;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3fb950, #2f81f7);
+      width: 0%;
+      transition: width 0.2s ease-out;
+    }
+
+    .jobs-table-container {
+      max-height: 350px;
+      overflow-y: auto;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      margin-top: 14px;
+    }
+
+    .wf-id {
+      font-family: ui-monospace, SFMono-Regular;
+      font-size: 12px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+
+<body>
+<h1>Workflow Scheduler Dashboard</h1>
+
+<div class="layout">
+
+<!-- LEFT -->
+<div class="card">
+  <div class="card-title">Create Workflow</div>
+
+  <label>User ID</label>
+  <input id="userId" value="user1">
+
+  <label>User Name (optional)</label>
+  <input id="userName" placeholder="Hu Yiran">
+
+  <label style="margin-top:10px;">Jobs</label>
+  <table id="jobTable">
+    <thead>
+      <tr><th>Job ID</th><th>Branch</th><th>Type</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button class="add-job-btn" onclick="addJob()">+ Add Job</button>
+
+  <div style="margin-top:15px;">
+    <button onclick="createWorkflow()">▶ Create & Start Tracking</button>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="card">
+  <div class="card-title">Workflow Status</div>
+
+  <div id="wfPlaceholder" style="color:var(--text-muted); font-size:13px;">
+    No workflow yet. Create one on the left.
+  </div>
+
+  <div id="wfStatusSection" style="display:none;">
+    <div style="display:flex; justify-content:space-between;">
+      <div>
+        <div style="font-size:12px;color:var(--text-muted);">Workflow ID</div>
+        <div id="wfId" class="wf-id">-</div>
+      </div>
+
+      <div>
+        <div style="font-size:12px;color:var(--text-muted);">Status</div>
+        <span id="wfStatusPill" class="status-pill status-PENDING">PENDING</span>
+      </div>
+    </div>
+
+    <div style="margin-top:10px;">
+      <div style="font-size:12px;color:var(--text-muted);">Overall Progress</div>
+      <div class="progress-shell">
+        <div id="wfProgressFill" class="progress-fill"></div>
+      </div>
+      <div id="wfProgressText" style="font-size:12px;margin-top:4px;color:var(--text-muted);">
+        0%
+      </div>
+    </div>
+
+    <div class="jobs-table-container" id="jobsContainer"></div>
+  </div>
+</div>
+
+</div><!-- END layout -->
+
+<script>
+let pollTimer = null;
+let currentWorkflowId = null;
+
+function addJob() {
+  const tbody = document.querySelector("#jobTable tbody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td><input class="job_id"></td>
+    <td><input class="branch"></td>
+    <td>
+      <select class="job_type">
+        <option value="SEGMENT_CELLS">SEGMENT_CELLS</option>
+        <option value="TISSUE_MASK">TISSUE_MASK</option>
+        <option value="INSTANSEG_WSI">INSTANSEG_WSI</option>
+      </select>
+    </td>
+    <td><button class="remove-btn" onclick="this.parentNode.parentNode.remove()">X</button></td>
+  `;
+  tbody.appendChild(row);
+}
+
+async function createWorkflow() {
+  const userId = document.getElementById("userId").value.trim();
+  if (!userId) { alert("User ID cannot be empty"); return; }
+
+  const rows = document.querySelectorAll("#jobTable tbody tr");
+  if (rows.length === 0) { alert("Add at least one job."); return; }
+
+  const jobs = [...rows].map(r => ({
+    job_id: r.querySelector(".job_id").value,
+    branch: r.querySelector(".branch").value,
+    job_type: r.querySelector(".job_type").value
+  }));
+
+  const res = await fetch("/workflow", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-User-ID": userId
+    },
+    body: JSON.stringify({ jobs })
+  });
+
+  const data = await res.json();
+  currentWorkflowId = data.workflow_id;
+
+  document.getElementById("wfPlaceholder").style.display = "none";
+  document.getElementById("wfStatusSection").style.display = "block";
+  document.getElementById("wfId").textContent = currentWorkflowId;
+
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(fetchWorkflowStatus, 1000);
+}
+
+async function fetchWorkflowStatus() {
+  const userId = document.getElementById("userId").value.trim();
+  if (!currentWorkflowId) return;
+
+  const res = await fetch(`/workflow/${currentWorkflowId}`, {
+    headers: { "X-User-ID": userId }
+  });
+  const data = await res.json();
+
+  const status = data.status;
+  const pill = document.getElementById("wfStatusPill");
+  pill.textContent = status;
+  pill.className = "status-pill status-" + status;
+
+  const jobs = data.jobs || [];
+  const avg = jobs.reduce((s,j)=>s+(j.progress||0), 0) / (jobs.length || 1);
+  document.getElementById("wfProgressFill").style.width = avg + "%";
+  document.getElementById("wfProgressText").textContent = avg.toFixed(1) + "%";
+
+  let html = `
+  <table>
+    <thead>
+      <tr>
+        <th>Job ID</th>
+        <th>Type</th>
+        <th>Branch</th>
+        <th>Status</th>
+        <th>Progress</th>
+        <th>Tiles</th>
+      </tr>
+    </thead><tbody>`;
+
+  for (const job of jobs) {
+    html += `
+      <tr>
+        <td>${job.job_id}</td>
+        <td>${job.job_type}</td>
+        <td>${job.branch}</td>
+        <td><span class="status-pill status-${job.status}">${job.status}</span></td>
+        <td>
+          <div class="progress-shell">
+            <div class="progress-fill" style="width:${job.progress}%"></div>
+          </div>
+          <div style="font-size:12px;color:#8b949e;">${Math.round(job.progress)}%</div>
+        </td>
+        <td>${job.tiles_processed}/${job.tiles_total}</td>
+      </tr>`;
+  }
+
+  html += "</tbody></table>";
+  document.getElementById("jobsContainer").innerHTML = html;
+}
+</script>
+
+</body>
+</html>

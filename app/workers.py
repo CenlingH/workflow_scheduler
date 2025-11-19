@@ -1,4 +1,5 @@
 import time
+import random
 # These job types need to be further adjusted based on real image processing algorithms.
 
 def run_segment_cells_job(job): 
@@ -25,8 +26,33 @@ def run_tissue_mask_job(job):
         job.progress = (i + 1) / job.tiles_total * 100
 
 
+def run_instanseg_job(job):
+    """
+    Mock InstanSeg job:
+    - Simulates tile overlap
+    - Simulates batching
+    - Simulates merging phase
+    - Much slower than other jobs
+    """
+    TOTAL_TILES = 60
+    job.tiles_total = TOTAL_TILES
+    TILE_BATCH_SIZE = 8  
+    TILE_SLEEP = 0.15    
+    processed = 0
+    while processed < TOTAL_TILES:
+        batch = min(TILE_BATCH_SIZE, TOTAL_TILES - processed)
+        time.sleep(TILE_SLEEP)
+        processed += batch
+        job.tiles_processed = processed
+        job.progress = round((processed / TOTAL_TILES) * 100, 2)
+    time.sleep(2.0)
+    job.progress = 100
+
+
 def run_tiled_job(job):
     '''Choose the correct image processing job types.'''
     if job.job_type == "TISSUE_MASK":
         return run_tissue_mask_job(job)
+    elif job.job_type == "INSTANSEG_WSI":
+        return run_instanseg_job(job)
     return run_segment_cells_job(job)

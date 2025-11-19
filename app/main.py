@@ -2,9 +2,10 @@ from fastapi import FastAPI, Header
 import uuid
 from .models import Workflow, Job
 from .scheduler import scheduler
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
-
+app.mount("/ui", StaticFiles(directory="frontend", html=True), name="ui")
 
 @app.post("/workflow")
 def create_workflow(data: dict, x_user_id: str = Header(...)):
