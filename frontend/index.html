@@ -17,38 +17,46 @@
     }
 
     * { box-sizing: border-box; }
+    
 
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 24px;
+      padding: 32px;
+      font-size: 16px;    
     }
 
-    h1 { margin: 0 0 20px 0; font-size: 26px; font-weight: 600; }
+    h1 { margin: 0 0 28px 0; font-size: 32px; font-weight: 600; }
 
     .layout {
       display: grid;
-      grid-template-columns: 1.1fr 1.4fr;
-      gap: 24px;
+      grid-template-columns: 1.2fr 1.8fr;
+      gap: 32px;
+      width: 100%;
     }
 
     .card {
       background: var(--bg-elevated);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 16px 20px;
+      padding: 24px 28px;
       box-shadow: 0 8px 24px rgba(1,4,9,0.8);
     }
 
     .card-title {
-      font-size: 15px;
+      font-size: 20px;
       font-weight: 600;
-      margin-bottom: 12px;
+      margin-bottom: 20px;
     }
 
-    label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+    label { 
+      display: block; 
+      font-size: 14px; 
+      color: var(--text-muted);
+      margin-bottom: 6px; 
+    }
 
     input, select {
       width: 100%;
@@ -56,9 +64,9 @@
       color: var(--text);
       border-radius: 6px;
       border: 1px solid var(--border);
-      padding: 6px 8px;
-      font-size: 13px;
-      margin-bottom: 8px;
+      padding: 10px 12px;
+      font-size: 16px;
+      margin-bottom: 14px;
     }
 
     input:focus, select:focus {
@@ -72,8 +80,8 @@
       color: white;
       border: none;
       border-radius: 6px;
-      padding: 7px 14px;
-      font-size: 13px;
+      padding: 10px 20px;
+      font-size: 16px;
       font-weight: 500;
       cursor: pointer;
       transition: background 0.15s ease-in-out;
@@ -90,19 +98,21 @@
 
     .add-job-btn {
       width: 100%;
-      margin-top: 10px;
+      margin-top: 12px;
       background: var(--accent);
+      font-size: 16px;
+      padding: 10px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
-      margin-top: 8px;
+      font-size: 15px;
+      margin-top: 12px;
     }
 
     th, td {
-      padding: 8px;
+      padding: 10px;
       border-bottom: 1px solid #21262d;
     }
 
@@ -110,26 +120,30 @@
       background: #0b0f16;
       color: var(--text-muted);
       font-weight: 500;
+      font-size: 15px;
     }
 
     .remove-btn {
       background: var(--danger);
       color: white;
-      padding: 4px 8px;
+      padding: 6px 10px;
       border-radius: 4px;
       cursor: pointer;
+      font-size: 14px;
     }
+
     .remove-btn:hover { background: #c93c38; }
 
     /* status pill */
     .status-pill {
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: 999px;
-      font-size: 11px;
+      font-size: 12px;
       border: 1px solid transparent;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+
     .status-PENDING { background: #161b22; border-color: var(--border); color: var(--text-muted); }
     .status-RUNNING { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
     .status-SUCCEEDED { background: rgba(63,185,80,0.18); border-color: var(--success); color: var(--success); }
@@ -137,7 +151,7 @@
 
     /* progress bar */
     .progress-shell {
-      height: 10px;
+      height: 14px;
       width: 100%;
       background: #0b0f16;
       border-radius: 999px;
@@ -153,27 +167,29 @@
     }
 
     .jobs-table-container {
-      max-height: 350px;
+      max-height: 420px;
       overflow-y: auto;
       border: 1px solid #21262d;
       border-radius: 8px;
-      margin-top: 14px;
+      margin-top: 20px;
     }
 
     .wf-id {
       font-family: ui-monospace, SFMono-Regular;
-      font-size: 12px;
+      font-size: 14px;
       word-break: break-all;
+      color: var(--text-muted);
     }
   </style>
 </head>
 
 <body>
+
 <h1>Workflow Scheduler Dashboard</h1>
 
 <div class="layout">
 
-<!-- LEFT -->
+<!-- LEFT PANEL -->
 <div class="card">
   <div class="card-title">Create Workflow</div>
 
@@ -183,7 +199,8 @@
   <label>User Name (optional)</label>
   <input id="userName" placeholder="Hu Yiran">
 
-  <label style="margin-top:10px;">Jobs</label>
+  <label style="margin-top:16px;">Jobs</label>
+
   <table id="jobTable">
     <thead>
       <tr><th>Job ID</th><th>Branch</th><th>Type</th><th></th></tr>
@@ -193,52 +210,56 @@
 
   <button class="add-job-btn" onclick="addJob()">+ Add Job</button>
 
-  <div style="margin-top:15px;">
+  <div style="margin-top:20px;">
     <button onclick="createWorkflow()">▶ Create & Start Tracking</button>
   </div>
 </div>
 
-<!-- RIGHT -->
+<!-- RIGHT PANEL -->
 <div class="card">
   <div class="card-title">Workflow Status</div>
 
-  <div id="wfPlaceholder" style="color:var(--text-muted); font-size:13px;">
+  <div id="wfPlaceholder" style="color:var(--text-muted); font-size:15px;">
     No workflow yet. Create one on the left.
   </div>
 
   <div id="wfStatusSection" style="display:none;">
-    <div style="display:flex; justify-content:space-between;">
+    <!-- TOP INFO -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>
-        <div style="font-size:12px;color:var(--text-muted);">Workflow ID</div>
+        <div style="font-size:13px;color:var(--text-muted);">Workflow ID</div>
         <div id="wfId" class="wf-id">-</div>
       </div>
 
       <div>
-        <div style="font-size:12px;color:var(--text-muted);">Status</div>
+        <div style="font-size:13px;color:var(--text-muted); margin-bottom:4px;">Status</div>
         <span id="wfStatusPill" class="status-pill status-PENDING">PENDING</span>
       </div>
     </div>
 
-    <div style="margin-top:10px;">
-      <div style="font-size:12px;color:var(--text-muted);">Overall Progress</div>
+    <!-- OVERALL PROGRESS -->
+    <div style="margin-top:18px;">
+      <div style="font-size:14px;color:var(--text-muted); margin-bottom:4px;">Overall Progress</div>
       <div class="progress-shell">
         <div id="wfProgressFill" class="progress-fill"></div>
       </div>
-      <div id="wfProgressText" style="font-size:12px;margin-top:4px;color:var(--text-muted);">
+      <div id="wfProgressText" style="font-size:14px;margin-top:6px;color:var(--text-muted);">
         0%
       </div>
     </div>
 
+    <!-- JOB TABLE -->
     <div class="jobs-table-container" id="jobsContainer"></div>
   </div>
 </div>
 
-</div><!-- END layout -->
+</div> <!-- END layout -->
 
 <script>
 let pollTimer = null;
 let currentWorkflowId = null;
 
+/* Add Job */
 function addJob() {
   const tbody = document.querySelector("#jobTable tbody");
   const row = document.createElement("tr");
@@ -257,6 +278,7 @@ function addJob() {
   tbody.appendChild(row);
 }
 
+/* Create Workflow */
 async function createWorkflow() {
   const userId = document.getElementById("userId").value.trim();
   if (!userId) { alert("User ID cannot be empty"); return; }
@@ -290,6 +312,7 @@ async function createWorkflow() {
   pollTimer = setInterval(fetchWorkflowStatus, 1000);
 }
 
+/* Fetch Status */
 async function fetchWorkflowStatus() {
   const userId = document.getElementById("userId").value.trim();
   if (!currentWorkflowId) return;
@@ -297,18 +320,22 @@ async function fetchWorkflowStatus() {
   const res = await fetch(`/workflow/${currentWorkflowId}`, {
     headers: { "X-User-ID": userId }
   });
+
   const data = await res.json();
 
+  /* Status Pill */
   const status = data.status;
   const pill = document.getElementById("wfStatusPill");
   pill.textContent = status;
   pill.className = "status-pill status-" + status;
 
+  /* Overall Progress */
   const jobs = data.jobs || [];
   const avg = jobs.reduce((s,j)=>s+(j.progress||0), 0) / (jobs.length || 1);
   document.getElementById("wfProgressFill").style.width = avg + "%";
   document.getElementById("wfProgressText").textContent = avg.toFixed(1) + "%";
 
+  /* Job Table */
   let html = `
   <table>
     <thead>
@@ -333,7 +360,7 @@ async function fetchWorkflowStatus() {
           <div class="progress-shell">
             <div class="progress-fill" style="width:${job.progress}%"></div>
           </div>
-          <div style="font-size:12px;color:#8b949e;">${Math.round(job.progress)}%</div>
+          <div style="font-size:13px;color:#8b949e;">${Math.round(job.progress)}%</div>
         </td>
         <td>${job.tiles_processed}/${job.tiles_total}</td>
       </tr>`;

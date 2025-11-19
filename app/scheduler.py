@@ -38,8 +38,10 @@ class Scheduler:
                 self.active_users.add(user)
             else:
                 self.user_queue.append(user)
+                workflow.status = WorkflowStatus.PENDING
                 return "QUEUED"
-
+            
+        workflow.status = WorkflowStatus.RUNNING
         self.user_workflows[user].append(workflow)
         self.workflow_index[workflow.workflow_id] = workflow
         for job in workflow.jobs:
@@ -103,9 +105,17 @@ class Scheduler:
         self.schedule()
 
         if all(j.status in [JobStatus.SUCCEEDED, JobStatus.FAILED]
-               for j in self.get_all_jobs(user)):
+            for j in self.get_all_jobs(user)):
+            for wf in self.user_workflows[user]:
+                jobs = wf.jobs
+                if any(j.status == JobStatus.FAILED for j in jobs):
+                    wf.status = WorkflowStatus.FAILED
+                else:
+                    wf.status = WorkflowStatus.SUCCEEDED
+
             if user in self.active_users:
                 self.active_users.remove(user)
+
             if self.user_queue:
                 next_user = self.user_queue.pop(0)
                 self.active_users.add(next_user)

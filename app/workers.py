@@ -1,6 +1,5 @@
 import time
-import random
-# These job types need to be further adjusted based on real image processing algorithms.
+# These job types need to be further adjusted based on real image processing algorithms. Below are just mock implementations.
 
 def run_segment_cells_job(job): 
     '''Simulate a long-running tiled image-processing task.
